@@ -1,24 +1,28 @@
 import {
   cp,
+  lstat,
   mkdir,
   mkdtemp,
   readdir,
   readFile,
   rm,
-  stat,
   writeFile,
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { zipSync } from "fflate";
-import { parse } from "smol-toml";
+import { parse, stringify } from "smol-toml";
+
+import { compileInputSchema } from "./compile-input-schema.mjs";
+import { validateInputSchema } from "./validate-input-schema.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const dist = join(root, "dist");
 const manifestPath = join(root, "manifest.toml");
 const entryPath = join(dist, "main.js");
-const schemaPath = join(root, "input_schema.json");
+const schemaTsPath = join(root, "input_schema.ts");
+const schemaJsonPath = join(root, "input_schema.json");
 const outputPath = join(dist, "my-poa.poa");
 
 function fail(message) {
@@ -31,35 +35,45 @@ function requireString(value, field) {
   }
 }
 
-async function validateInputSchema(path) {
-  let schema;
-  try {
-    schema = JSON.parse(await readFile(path, "utf8"));
-  } catch (error) {
-    fail(`input_schema.json must be valid JSON: ${error.message}`);
+async function readInputSchema() {
+  if (await exists(schemaTsPath)) {
+    try {
+      const source = await readFile(schemaTsPath, "utf8");
+      return compileInputSchema(source);
+    } catch (error) {
+      fail(error.message);
+    }
   }
-  if (
-    schema === null ||
-    typeof schema !== "object" ||
-    Array.isArray(schema) ||
-    schema.type !== "object"
-  ) {
-    fail(
-      'input_schema.json must declare an object schema with "type": "object"',
-    );
+
+  if (await exists(schemaJsonPath)) {
+    let schema;
+    try {
+      schema = JSON.parse(await readFile(schemaJsonPath, "utf8"));
+    } catch (error) {
+      fail(`input_schema.json must be valid JSON: ${error.message}`);
+    }
+    return schema;
   }
+
+  return undefined;
 }
 
 async function exists(path) {
   try {
-    await stat(path);
+    await lstat(path);
     return true;
-  } catch {
-    return false;
+  } catch (error) {
+    if (error.code === "ENOENT") return false;
+    throw error;
   }
 }
 
 async function collectFiles(directory, packageRoot, files) {
+  if (!(await lstat(directory)).isDirectory()) {
+    fail(
+      `package resource must be a regular directory: ${relative(root, directory)}`,
+    );
+  }
   const entries = (await readdir(directory, { withFileTypes: true })).sort(
     (a, b) => a.name.localeCompare(b.name),
   );
@@ -106,26 +120,41 @@ if (!(await exists(entryPath))) {
   fail("dist/main.js does not exist; run the build first");
 }
 
-const hasSchema = await exists(schemaPath);
-if (hasSchema && poa.input_schema !== "input_schema.json") {
+const inputSchema = await readInputSchema();
+const hasSchema = inputSchema !== undefined;
+if (
+  hasSchema &&
+  poa.input_schema !== undefined &&
+  poa.input_schema !== "input_schema.json"
+) {
   fail(
-    'input_schema.json exists, so [poa].input_schema must be "input_schema.json"',
+    'input schema exists, so [poa].input_schema must be "input_schema.json"',
   );
 }
 if (!hasSchema && poa.input_schema !== undefined) {
   fail("[poa].input_schema points to a missing input_schema.json");
 }
 if (hasSchema) {
-  await validateInputSchema(schemaPath);
+  validateInputSchema(inputSchema);
 }
 
 const temporaryPackage = await mkdtemp(join(tmpdir(), "brainary-poa-"));
 try {
   const mcpSource = join(root, "mcp");
-  await writeFile(join(temporaryPackage, "manifest.toml"), manifestText);
+  const packageManifest = parse(manifestText);
+  if (hasSchema) {
+    packageManifest.poa.input_schema = "input_schema.json";
+  }
+  const packageManifestText = hasSchema
+    ? stringify(packageManifest)
+    : manifestText;
+  await writeFile(join(temporaryPackage, "manifest.toml"), packageManifestText);
   await cp(entryPath, join(temporaryPackage, "main.js"));
   if (hasSchema) {
-    await cp(schemaPath, join(temporaryPackage, "input_schema.json"));
+    await writeFile(
+      join(temporaryPackage, "input_schema.json"),
+      `${JSON.stringify(inputSchema, null, 2)}\n`,
+    );
   }
   if (await exists(mcpSource)) {
     const mcpFiles = {};
@@ -143,7 +172,7 @@ try {
   await collectFiles(temporaryPackage, temporaryPackage, archiveFiles);
   const archive = zipSync(archiveFiles, {
     level: 6,
-    mtime: new Date("1980-01-01T00:00:00Z"),
+    mtime: new Date(1980, 0, 1),
   });
   await mkdir(dist, { recursive: true });
   await writeFile(outputPath, archive);

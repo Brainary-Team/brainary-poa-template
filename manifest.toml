@@ -5,5 +5,4 @@ version = "0.1.0"
 runtime = "codex-v8"
 poa_api_version = 1
 entry = "main.js"
-input_schema = "input_schema.json"
 description = "A minimal Brainary PoA created from the template."

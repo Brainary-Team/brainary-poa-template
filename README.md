@@ -8,8 +8,11 @@ entry point and a `.poa` package without requiring the Brainary binary during de
 
 ## Requirements
 
-- Node.js 22 or newer
+- Node.js 22 or newer (latest LTS recommended)
 - pnpm 12
+
+Some toolchain dependencies declare a narrower Node.js range. Strict engine checks require
+Node.js 22.12+ (22.x), 24.x, or 26+.
 
 ## Workflow
 
@@ -19,9 +22,17 @@ pnpm test
 pnpm package
 ```
 
-`pnpm package` builds `src/main.ts`, validates `manifest.toml`, collects the optional
-`input_schema.json` and `mcp/` files, and writes `dist/my-poa.poa`. The starter schema accepts an
-optional `message`; when it is omitted, the example returns its default greeting.
+`pnpm package` builds `src/main.ts`, converts the optional `input_schema.ts` into
+`input_schema.json`, validates `manifest.toml`, collects the generated schema and `mcp/` files, and
+writes `dist/my-poa.poa`. The starter schema accepts an optional `message`; when it is omitted, the
+example returns its default greeting.
+
+The schema file must declare `InputParams` using interfaces or type aliases. It is a declarative
+TypeScript subset, not executable application code: imports, functions, generics, and interface
+inheritance are rejected. Supported annotations include `@minLength`, `@minimum`, and `@oneOf`.
+Packaging validates the resulting JSON Schema before writing the archive. If both schema files
+exist, TypeScript takes precedence; JSON-only projects remain supported. Generated JSON and the
+updated manifest are written into the archive without modifying source files.
 
 The package manifest uses the current PoA contract:
 
@@ -38,7 +49,7 @@ API version values are fixed by the template and checked by the packaging script
 
 ```text
 src/main.ts           PoA entry point
-input_schema.json     optional hand-written input schema
+input_schema.ts       optional TypeScript input schema; compiled during packaging
 agents/               agent implementations
 prompts/              prompt resources
 memory/               reserved runtime memory adapter directory
@@ -46,6 +57,7 @@ tools/                tool adapters
 mcp/                  optional stdio MCP files shipped in the package
 tests/                Vitest tests
 types/runtime.d.ts    Brainary Runtime API declarations
+scripts/compile-input-schema.mjs  TypeScript Schema to JSON Schema compiler
 scripts/package.mjs   fflate-based .poa packager
 dist/                 generated build and package output
 ```

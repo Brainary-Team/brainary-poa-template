@@ -1,0 +1,162 @@
+/**
+ * Complete business input used to exercise the PoA Step 3 schema compiler.
+ * @schema https://json-schema.org/draft/2020-12/schema
+ * @title Complete PoA input
+ * @additionalProperties false
+ */
+export interface InputParams {
+  /**
+   * City to process.
+   * @minLength 1
+   * @maxLength 120
+   * @pattern ^[A-Za-z][A-Za-z .'-]*$
+   */
+  city?: string;
+
+  /** Enables the optional processing stage. */
+  enabled?: boolean;
+
+  /** Demonstrates the JSON null type. */
+  emptyValue?: null;
+
+  /**
+   * Retry count represented as a JSON Schema integer.
+   * @minimum 0
+   * @maximum 10
+   * @multipleOf 1
+   * @asType integer
+   */
+  attempts?: number;
+
+  /**
+   * Confidence must lie strictly between zero and one.
+   * @exclusiveMinimum 0
+   * @exclusiveMaximum 1
+   */
+  confidence?: number;
+
+  /** A single literal becomes const. */
+  kind?: "complete-example";
+
+  /** A literal union becomes enum. */
+  mode?: "fast" | "accurate" | "balanced";
+
+  /**
+   * Array syntax with all array constraints.
+   * @minItems 1
+   * @maxItems 5
+   * @uniqueItems true
+   */
+  tags?: string[];
+
+  /** Generic Array syntax. */
+  scores?: Array<number>;
+
+  /** A named interface becomes a $ref and a reachable $defs entry. */
+  image?: ImageInput;
+
+  /** A non-literal union becomes anyOf. */
+  flexibleValue?: string | InlineObject;
+
+  /**
+   * Exactly one union branch must match: an HTTPS URL, or a 32-character hex report id.
+   * The two patterns cannot both match one string, which is what `@oneOf` requires --
+   * a value matching two branches is rejected just as loudly as one matching none.
+   * @oneOf
+   */
+  exactValue?: HttpsUrl | ReportId;
+
+  /** A same-base-type intersection is emitted as allOf. */
+  boundedCode?: BoundedCode;
+
+  /** Object intersections merge their properties and required fields. */
+  combinedObject?: CombinedObject;
+
+  /** Object explicitly allowing arbitrary values. */
+  openMetadata?: OpenMetadata;
+
+  /** Object whose extra values use an inline JSON Schema. */
+  inlineMetadata?: InlineMetadata;
+
+  /** Object whose extra values reference a named schema type. */
+  namedMetadata?: NamedMetadata;
+
+  /** A TypeScript string index signature also defines additionalProperties. */
+  indexedMetadata?: IndexedMetadata;
+}
+
+interface ImageInput {
+  type: "image";
+  source: ImageBase64Source;
+
+  /** @minLength 1 */
+  name?: string;
+}
+
+interface ImageBase64Source {
+  type: "base64";
+  mediaType: "image/png" | "image/jpeg" | "image/webp" | "image/gif";
+
+  /**
+   * Base64 data without a data-URL prefix.
+   * @minLength 1
+   * @contentEncoding base64
+   */
+  data: string;
+}
+
+interface InlineObject {
+  value: string;
+}
+
+/** The URL branch of the oneOf example.
+ * @format uri
+ * @pattern ^https://
+ */
+type HttpsUrl = string;
+
+/** The identifier branch of the oneOf example. No string is both this and an https:// URL,
+ * so exactly one branch can ever match. Note `@contentEncoding` would not do this job:
+ * JSON Schema 2020-12 treats it as an annotation, so a `base64` branch matches every string
+ * and swallows the other branch's values along with its own.
+ * @pattern ^[0-9a-f]{32}$
+ */
+type ReportId = string;
+
+/** @minLength 2 */
+type AtLeastTwoCharacters = string;
+
+/** @maxLength 8 */
+type AtMostEightCharacters = string;
+
+type BoundedCode = AtLeastTwoCharacters & AtMostEightCharacters;
+
+interface RequiredPart {
+  id: string;
+  shared?: string;
+}
+
+interface OptionalPart {
+  shared: string;
+  note?: string;
+}
+
+type CombinedObject = RequiredPart & OptionalPart;
+
+/** @additionalProperties true */
+interface OpenMetadata {
+  known?: string;
+}
+
+/** @additionalProperties {"type":"string","minLength":1} */
+interface InlineMetadata {}
+
+/** @minLength 1 */
+type NonEmptyString = string;
+
+/** @additionalProperties NonEmptyString */
+interface NamedMetadata {}
+
+interface IndexedMetadata {
+  [key: string]: boolean;
+}

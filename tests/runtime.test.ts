@@ -1,4 +1,4 @@
-import { execFile as execFileCallback } from "node:child_process";
+import { exec as execCallback } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
@@ -6,7 +6,7 @@ import { unzipSync } from "fflate";
 import { parse } from "smol-toml";
 import { describe, expect, it, vi } from "vitest";
 
-const execFile = promisify(execFileCallback);
+const exec = promisify(execCallback);
 const projectRoot = fileURLToPath(new URL("..", import.meta.url));
 
 describe("PoA package contract", () => {
@@ -49,8 +49,8 @@ describe("PoA package contract", () => {
   });
 
   it("packages the entry, manifest, and input schema", async () => {
-    const command = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
-    await execFile(command, ["package"], { cwd: projectRoot });
+    // The fixed command uses the platform shell so Windows can launch pnpm.cmd.
+    await exec("pnpm package", { cwd: projectRoot });
 
     const archive = unzipSync(
       await readFile(new URL("../dist/my-poa.poa", import.meta.url)),
@@ -61,13 +61,16 @@ describe("PoA package contract", () => {
       "main.js",
       "manifest.toml",
     ]);
-    expect(new TextDecoder().decode(archive["manifest.toml"])).toContain(
-      'entry = "main.js"',
-    );
+    const manifest = parse(new TextDecoder().decode(archive["manifest.toml"]));
+    expect(manifest.poa).toMatchObject({
+      entry: "main.js",
+      input_schema: "input_schema.json",
+    });
     expect(
       JSON.parse(new TextDecoder().decode(archive["input_schema.json"])),
     ).toMatchObject({
       type: "object",
+      description: "Input accepted by the starter PoA.",
       properties: {
         message: {
           type: "string",
