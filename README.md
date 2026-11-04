@@ -22,19 +22,40 @@ pnpm test
 pnpm package
 ```
 
-`pnpm package` 会构建 `src/main.ts`，将可选的 `input_schema.ts` 转换为 `input_schema.json`，
-校验 `manifest.toml`，收集输入 Schema 和 `mcp/` 文件，最终生成 `dist/my-poa.poa`。
-默认示例接受一个可选的 `message` 字段；不传入时，返回默认问候语。
+运行 `pnpm package` 后，模板会：
 
-`input_schema.ts` 必须通过接口（`interface`）或类型别名（`type`）声明 `InputParams`。
-它用于描述输入结构，只支持约定的 TypeScript 类型语法，不会作为业务代码执行；
-不支持导入、函数、自定义泛型和接口继承。支持的注解包括 `@minLength`、`@minimum` 和 `@oneOf`。
-打包脚本会先校验转换后的 JSON Schema，再生成 `.poa` 包。
+1. 把 `src/main.ts`（或 `src/main.js`）构建成 `dist/main.js`。
+2. 如果有 `input_schema.ts`，把其中定义的输入参数转换成 `input_schema.json`。
+3. 检查 `manifest.toml` 和输入参数的格式定义，有问题就报错。
+4. 把入口文件、配置文件、输入参数定义以及 `mcp/` 下的文件（如果有）打成一个包，保存为 `dist/my-poa.poa`。
 
-如果 `input_schema.ts` 和 `input_schema.json` 同时存在，优先使用 TypeScript 文件；
-也支持仅提供手写 JSON Schema。生成的 JSON 和补充了 Schema 路径的 manifest 只写入包内，不会修改源码文件。
+## 输入参数怎么写
 
-`manifest.toml` 使用当前 PoA 约定：
+在项目根目录的 `input_schema.ts` 中，用名为 `InputParams` 的 `interface` 或 `type` 定义 PoA 可以接收哪些参数。例如：
+
+```ts
+export interface InputParams {
+  message?: string;
+}
+```
+
+这表示 `message` 是一个字符串，`?` 表示可以不传。模板自带的示例会返回你传入的消息，不传时返回默认问候语。
+
+打包脚本只读取类型声明来生成 JSON，不会执行这个文件里的代码。
+目前不支持 `import`、函数、自定义泛型或 `interface extends`。
+可以通过 `@minLength`、`@minimum`、`@oneOf` 等注解补充输入限制，例如字符串的最短长度。
+
+如果想直接写 JSON，也可以删除 `input_schema.ts`，改用 `input_schema.json`。
+两个文件同时存在时，打包脚本使用 TS 文件，忽略 JSON 文件。
+
+生成的 JSON 会直接放进 `.poa` 包，包内的 `manifest.toml` 也会自动加上
+`input_schema = "input_schema.json"`。项目中的源码文件不会被改写。
+
+## 项目配置怎么改
+
+在 `manifest.toml` 中，按自己的项目填写 `namespace`、`name` 和 `version`。
+
+下面三项分别指定 Brainary 运行时、PoA API 版本和包内入口文件，保持模板的默认值即可：
 
 ```toml
 runtime = "codex-v8"
@@ -42,8 +63,7 @@ poa_api_version = 1
 entry = "main.js"
 ```
 
-PoA 的业务身份和版本（`namespace`、`name`、`version`）由开发者维护。
-Runtime 和 API 版本由模板固定，打包脚本负责校验。
+打包时会检查这三项是否与模板要求一致。
 
 ## 目录结构
 
