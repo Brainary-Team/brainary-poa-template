@@ -166,6 +166,9 @@ importers:
 
   .:
     dependencies:
+      '@brainary/poa-sdk':
+        specifier: 0.2.0-alpha
+        version: 0.2.0-alpha
       ajv:
         specifier: ^8.20.0
         version: 8.20.0
@@ -253,6 +256,9 @@ packages:
     engines: {node: '>=14.21.3'}
     cpu: [x64]
     os: [win32]
+
+  '@brainary/poa-sdk@0.2.0-alpha':
+    resolution: {integrity: sha512-MJhtQWBLtHvOnBdFugcYQ5PxbUrwMeyOlV0OPZJsZIjqDrEO/sX0JdfxFEbXs2xNDEEn7WZJF9pNr668AJhVFQ==}
 
   '@jridgewell/resolve-uri@3.1.2':
     resolution: {integrity: sha512-bRISgCIjP20/tbWSPWMEi54QVPRZExkuD9lJL+UIxUKtwVJA8wW1Trb1jMs1RFXo1CBTNZ/5hpC9QvmKWdopKw==}
@@ -713,6 +719,8 @@ snapshots:
 
   '@biomejs/cli-win32-x64@2.5.15':
     optional: true
+
+  '@brainary/poa-sdk@0.2.0-alpha': {}
 
   '@jridgewell/resolve-uri@3.1.2': {}
 

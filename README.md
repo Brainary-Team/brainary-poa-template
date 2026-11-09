@@ -4,7 +4,8 @@
 
 这是一套独立的 Brainary PoA 开发模板，默认使用 TypeScript，也支持将 `src/main.ts` 替换为
 `src/main.js` 后使用 JavaScript 开发。模板提供安装依赖、代码检查、测试、构建和打包命令，
-可生成 JavaScript 入口文件和 `.poa` 包。构建和打包不依赖 Brainary 二进制，生成的包交给 Brainary 加载执行。
+可生成 JavaScript 入口文件和 `.poa` 包。模板已预装 `@brainary/poa-sdk`，执行 `pnpm install` 时会一并安装，
+可以在 `src/main.ts` 中直接导入。构建和打包不依赖 Brainary 二进制，生成的包交给 Brainary 加载执行。
 
 ## 环境要求
 

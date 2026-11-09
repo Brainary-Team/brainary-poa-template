@@ -17,6 +17,7 @@
     "package": "pnpm build && node scripts/package.mjs"
   },
   "dependencies": {
+    "@brainary/poa-sdk": "0.2.0-alpha",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
     "fflate": "^0.8.3",
