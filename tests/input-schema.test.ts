@@ -13,14 +13,14 @@ describe("TypeScript input schema compiler", () => {
     expect(compileInputSchema(source)).toEqual({
       type: "object",
       properties: {
-        message: {
+        coffee: {
           type: "string",
-          description: "Optional message for the example PoA.",
+          description: "Coffee type: americano, latte, or cappuccino.",
         },
       },
       additionalProperties: false,
-      description: "Input accepted by the starter PoA.",
-      title: "My PoA input",
+      description: "Input accepted by the coffee PoA.",
+      title: "Coffee PoA input",
       $schema: "https://json-schema.org/draft/2020-12/schema",
     });
   });

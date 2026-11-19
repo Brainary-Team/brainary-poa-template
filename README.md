@@ -2,7 +2,7 @@
 
 # Brainary PoA 模板
 
-这是一套独立的 Brainary PoA 开发模板，默认使用 TypeScript，也支持将 `src/main.ts` 替换为
+这是一个基于模板实现的咖啡 PoA 示例，默认使用 TypeScript，也支持将 `src/main.ts` 替换为
 `src/main.js` 后使用 JavaScript 开发。模板提供安装依赖、代码检查、测试、构建和打包命令，
 可生成 JavaScript 入口文件和 `.poa` 包。模板已预装 `@brainary/poa-sdk`，执行 `pnpm install` 时会一并安装，
 可以在 `src/main.ts` 中直接导入。构建和打包不依赖 Brainary 二进制，生成的包交给 Brainary 加载执行。
@@ -32,15 +32,15 @@ pnpm package
 
 ## 输入参数怎么写
 
-在项目根目录的 `input_schema.ts` 中，用名为 `InputParams` 的 `interface` 或 `type` 定义 PoA 可以接收哪些参数。例如：
+在项目根目录的 `input_schema.ts` 中，用名为 `InputParams` 的 `interface` 或 `type` 定义 PoA 可以接收哪些参数。当前示例接收咖啡类型：
 
 ```ts
 export interface InputParams {
-  message?: string;
+  coffee?: string;
 }
 ```
 
-这表示 `message` 是一个字符串，`?` 表示可以不传。模板自带的示例会返回你传入的消息，不传时返回默认问候语。
+传入 `americano`、`latte` 或 `cappuccino` 时，PoA 会返回对应的材料、制作步骤和预计耗时；传入其他值时默认返回美式配方。
 
 打包脚本只读取类型声明来生成 JSON，不会执行这个文件里的代码。
 目前不支持 `import`、函数、自定义泛型或 `interface extends`。

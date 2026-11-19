@@ -1,8 +1,8 @@
 [poa]
 namespace = "brainary"
-name = "my_poa"
+name = "coffee_poa"
 version = "0.1.0"
 runtime = "codex-v8"
 poa_api_version = 1
 entry = "main.js"
-description = "A minimal Brainary PoA created from the template."
+description = "Returns a fixed recipe for an Americano, latte, or cappuccino."

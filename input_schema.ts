@@ -1,9 +1,9 @@
 /**
- * Input accepted by the starter PoA.
- * @title My PoA input
+ * Input accepted by the coffee PoA.
+ * @title Coffee PoA input
  * @additionalProperties false
  */
 export interface InputParams {
-  /** Optional message for the example PoA. */
-  message?: string;
+  /** Coffee type: americano, latte, or cappuccino. */
+  coffee?: string;
 }

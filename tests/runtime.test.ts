@@ -31,7 +31,7 @@ describe("PoA package contract", () => {
   it("emits the runtime entry output from POA_INPUT", async () => {
     const output: unknown[] = [];
     vi.resetModules();
-    vi.stubGlobal("POA_INPUT", { message: "from runtime" });
+    vi.stubGlobal("POA_INPUT", { coffee: "cappuccino" });
     vi.stubGlobal("text", (value: unknown) => output.push(value));
 
     try {
@@ -42,8 +42,15 @@ describe("PoA package contract", () => {
 
     expect(output).toEqual([
       {
-        ok: true,
-        message: "from runtime",
+        coffee: "cappuccino",
+        name: "卡布奇诺",
+        ingredients: ["浓缩咖啡 30ml", "热牛奶 60ml", "奶泡 60ml"],
+        steps: [
+          "萃取一份浓缩咖啡。",
+          "加热牛奶并打出厚奶泡。",
+          "先倒入热牛奶，再铺上奶泡。",
+        ],
+        total_time_minutes: 5,
       },
     ]);
   });
@@ -70,9 +77,9 @@ describe("PoA package contract", () => {
       JSON.parse(new TextDecoder().decode(archive["input_schema.json"])),
     ).toMatchObject({
       type: "object",
-      description: "Input accepted by the starter PoA.",
+      description: "Input accepted by the coffee PoA.",
       properties: {
-        message: {
+        coffee: {
           type: "string",
         },
       },
