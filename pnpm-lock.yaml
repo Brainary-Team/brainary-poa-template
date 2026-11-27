@@ -167,8 +167,8 @@ importers:
   .:
     dependencies:
       '@brainary/poa-sdk':
-        specifier: 0.2.0-alpha
-        version: 0.2.0-alpha
+        specifier: ^0.2.0-rc
+        version: 0.2.0-rc(typescript@5.9.3)
       ajv:
         specifier: ^8.20.0
         version: 8.20.0
@@ -257,8 +257,20 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@brainary/poa-sdk@0.2.0-alpha':
-    resolution: {integrity: sha512-MJhtQWBLtHvOnBdFugcYQ5PxbUrwMeyOlV0OPZJsZIjqDrEO/sX0JdfxFEbXs2xNDEEn7WZJF9pNr668AJhVFQ==}
+  '@brainary/poa-sdk@0.2.0-rc':
+    resolution: {integrity: sha512-PqjuikUUgr7PIoRPczmwLHPltSoWP1wWwgwlo9cLJ5F7Uw9R5SkF76Z84tyumQvPJxGzJzrGczguCkKMPCpJOQ==}
+
+  '@brainary/wm-sdk@0.2.0-rc':
+    resolution: {integrity: sha512-P8NYTVci4TwnRaUhaSXJizCxL1W6FDzLuRf/+v8VBRD5EDAZzwIYrxIZbjb8KivOBnacKc8mNIqtN/D6rBhQqA==}
+    hasBin: true
+    peerDependencies:
+      tsup: '>=8.0.0'
+      typescript: '>=5.0.0'
+    peerDependenciesMeta:
+      tsup:
+        optional: true
+      typescript:
+        optional: true
 
   '@jridgewell/resolve-uri@3.1.2':
     resolution: {integrity: sha512-bRISgCIjP20/tbWSPWMEi54QVPRZExkuD9lJL+UIxUKtwVJA8wW1Trb1jMs1RFXo1CBTNZ/5hpC9QvmKWdopKw==}
@@ -720,7 +732,16 @@ snapshots:
   '@biomejs/cli-win32-x64@2.5.15':
     optional: true
 
-  '@brainary/poa-sdk@0.2.0-alpha': {}
+  '@brainary/poa-sdk@0.2.0-rc(typescript@5.9.3)':
+    dependencies:
+      '@brainary/wm-sdk': 0.2.0-rc(typescript@5.9.3)
+    transitivePeerDependencies:
+      - tsup
+      - typescript
+
+  '@brainary/wm-sdk@0.2.0-rc(typescript@5.9.3)':
+    optionalDependencies:
+      typescript: 5.9.3
 
   '@jridgewell/resolve-uri@3.1.2': {}
 
